@@ -33,20 +33,25 @@ checkdir = test -f debian/rules
 build: build-arch build-indep
 build-arch: built
 build-indep: built
-built: dibuild config
+built: reconf dibuild config
 	@echo "== dpkg-buildpackage: build" 1>&2
 	$(MAKE) $(PMAKEFLAGS) default
 	touch built
 
-config: .census
+reconf: .reconf
+.reconf:
+	$(checkdir)
+	AUTOHEADER=/bin/true dh_autoreconf
+	touch $@
+
+config: .census .reconf
 .census:
 	@echo "== dpkg-buildpackage: configure" 1>&2
 	$(checkdir)
-	AUTOHEADER=/bin/true dh_autoreconf
 	$(options) $(MAKE) $(PMAKEFLAGS) include/platform_defs.h
 	touch .census
 
-dibuild:
+dibuild: .reconf
 	$(checkdir)
 	@echo "== dpkg-buildpackage: installer" 1>&2
 	if [ ! -f mkfs/mkfs.xfs-$(bootpkg) ]; then \
@@ -65,7 +70,7 @@ dibuild:
 clean:
 	@echo "== dpkg-buildpackage: clean" 1>&2
 	$(checkdir)
-	-rm -f built .census mkfs/mkfs.xfs-$(bootpkg)
+	-rm -f built .census .reconf mkfs/mkfs.xfs-$(bootpkg)
 	$(MAKE) distclean
 	-rm -rf $(dirme) $(dirdev) $(dirdi)
 	-rm -f debian/*substvars debian/files* debian/*.debhelper
@@ -81,7 +86,6 @@ binary-arch: checkroot built
 	$(pkgme)  $(MAKE) -C . install
 	$(pkgdev) $(MAKE) -C . install-dev
 	$(pkgdi)  $(MAKE) -C debian install-d-i
-	$(pkgme)  $(MAKE) dist
 	install -D -m 0755 debian/local/initramfs.hook debian/xfsprogs/usr/share/initramfs-tools/hooks/xfs
 	rmdir debian/xfslibs-dev/usr/share/doc/xfsprogs
 	rm -f debian/xfslibs-dev/lib/libhandle.la
