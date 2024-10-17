@@ -1,3 +1,11 @@
+xfsprogs (5.3.0-1ubuntu2.1) focal; urgency=medium
+
+  * Backport from upstream:
+    - fix fsck.xfs run by different shells when fsck.mode=force is set
+      (LP: #2081163).
+
+ -- Gerald Yang <gerald.yang@canonical.com>  Thu, 17 Oct 2024 05:32:23 +0000
+
 xfsprogs (5.3.0-1ubuntu2) focal; urgency=medium
 
   * No-change rebuild for icu soname change.
